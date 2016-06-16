@@ -1,0 +1,27 @@
+{
+  "name": "just-json",
+  "version": "1.0.0",
+  "description": "Small json-driven flat-files database system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ruslankonev/just-json.git"
+  },
+  "keywords": [
+    "json",
+    "database",
+    "jsondb",
+    "db",
+    "flat",
+    "file"
+  ],
+  "author": "Ruslan Konev <konev.lincor@gmail.com> (http://justpromotion.ru)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ruslankonev/just-json/issues"
+  },
+  "homepage": "https://github.com/ruslankonev/just-json#readme"
+}
