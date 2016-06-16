@@ -19,9 +19,13 @@
     "file"
   ],
   "author": "Ruslan Konev <konev.lincor@gmail.com> (http://justpromotion.ru)",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/ruslankonev/just-json/issues"
   },
-  "homepage": "https://github.com/ruslankonev/just-json#readme"
+  "homepage": "https://github.com/ruslankonev/just-json#readme",
+  "dependencies": {
+    "lodash": "^4.13.1",
+    "node-uuid": "^1.4.7"
+  }
 }

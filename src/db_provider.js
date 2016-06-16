@@ -1,9 +1,10 @@
 /**
- * JSON-DB-Provider
+ * Just-JSON - small json-driven flat-files database system
  * based on diskdb (https://github.com/arvindr21/diskDB/)
+ * (c) 2016, justpromotion.ru
  *
  * @author Ruslan Konev
- * https://github.com/ruslankonev/****
+ * https://github.com/ruslankonev/just-json
  *
  ********************************************************************/
 'use strict';
@@ -39,107 +40,12 @@ let Opts = {
  ********************************************************************/
 const __modelsPath = __appPath + '/stores/db/';
 
-/**
- *  Helpers
- * =================================== */
 
-/**
- *  LowerCase объекта
- ********************************************************************/
-var objectLowercase = function(obj, caller) {
-    //     caller && winston.info(`Run objectLowercase from ${caller}`);
-    _.forEach(obj, function(key, n) {
-        if (_.isObject(key)) {
-            key = objectLowercase(key);
-        } else {
-            if (_.isString(key)) {
-                key = key.toLowerCase();
-            }
-        }
-        obj[n] = key;
-    });
-    return obj;
-};
-
-/**
- *  Проверка валидности пути
- ********************************************************************/
-var isValidPath = function (path) {
-    try {
-        fs.accessSync(path, fs.F_OK);
-        return true;
-    } catch (e) {
-        return false;
-    }
-};
-
-/**
- *  Получение текущей даты
- ********************************************************************/
-var getToday = function() {
-    let d = new Date();
-    let month = d.getMonth() + 1; // month is zero-based
-    return d.getDate() + '.' + month + '.' + d.getFullYear();
-};
-
-/**
- * Удаление файла
- ********************************************************************/
-var removeFile = function(file) {
-    return fs.unlinkSync(file);
-};
-
-/**
- *  Проверка на дата-зависимый формат ведения данных
- ********************************************************************/
-var modelDateBased = function (checkModel, key) {
-    if (Opts.dateBased === true) {
-        // Проверяем создана ли директория
-        !isValidPath(__modelsPath + getToday()) && fs.mkdirSync(__modelsPath + getToday());
-        // Присваиваем новый путь переменной
-        checkModel = __modelsPath + getToday() + '/' + key + '.json';
-    }
-    return checkModel;
-};
-
-/**
- *  Запись данных в файл
- ********************************************************************/
-var writeToFile = function(outputFilename, content) {
-    if (!content) {
-        content = [];
-    }
-    fs.writeFileSync(outputFilename, JSON.stringify(content, null, 0));
-};
-
-/**
- *  Чтение данных из файла
- ********************************************************************/
-var readFromFile = function (file) {
-    winston.info('read from file', file);
-    return fs.readFileSync(file, 'utf-8');
-};
-
-/**
- *  Чтение данных
- ********************************************************************/
-var readData = function (_f) {
-    if (!isValidPath(_f) && Opts.dateBased === true) {
-        if (!isValidPath(__modelsPath + getToday())) {
-            fs.mkdirSync(__modelsPath + getToday());
-        }
-    }
-    try {
-        return JSON.parse(readFromFile(_f));
-    } catch (err) {
-        winston.info('ERROR:', err);
-    }
-};
 
 /**
  * Загрузка коллекций из файла схемы
- * @param  {[type]} collections содержание файла схемы
- * @return {[type]} target      получатель - this
+ * @param  {array} collections содержание файла схемы
+ * @return {object} target      получатель - this
  ********************************************************************/
 var loadCollections = function (collections, target) {
     let items = [];

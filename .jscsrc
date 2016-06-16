@@ -1,0 +1,31 @@
+{
+    "preset": "yandex",
+    "esnext": true,
+    "fileExtensions": [".js", "jscs"],
+    "disallowKeywords": ["with", "eval"],
+    "requireParenthesesAroundIIFE": true,
+    "requireCapitalizedConstructors": true,
+    "maximumLineLength": 120,
+    "validateLineBreaks": "LF",
+    "validateIndentation": 4,
+    "disallowKeywords": ["with", "evel"],
+    "disallowMultipleVarDecl": false,
+    "disallowImplicitTypeConversion": ["string"],
+
+    "disallowSpacesInsideObjectBrackets": null,
+    "disallowSpacesInAnonymousFunctionExpression": null,
+    "disallowSpacesInNamedFunctionExpression": null,
+    "disallowSpacesInFunction": null,
+
+    "requireSpacesInAnonymousFunctionExpression": {
+      "beforeOpeningCurlyBrace": true
+    },
+    "requireSpacesInNamedFunctionExpression": {
+      "beforeOpeningCurlyBrace": true
+    },
+    "requireSpacesInFunction": {
+      "beforeOpeningCurlyBrace": true
+    },
+
+    "excludeFiles": []
+}
