@@ -1,7 +1,7 @@
 /**********************************************************************
  *
  * Just-JSON - small json-driven flat-files database system
- * inspired from diskdb (https://github.com/arvindr21/diskDB/)
+ * inspired by diskdb (https://github.com/arvindr21/diskDB/)
  * (c) 2016, justpromotion.ru
  *
  * @author Ruslan Konev
@@ -25,7 +25,7 @@ require('./helpers');
  **************************************/
 let _modelsPath = '';
 let _self = {
-    cacheTime: 5,   // in minutes
+    cacheTime: 5, // in minutes
     _schema: {
         url: '',
         content: {}
@@ -47,11 +47,9 @@ let _opts = {
 /**
  *  Load collections from file into memory
  */
-function loadCollections (collections, target) {
-
+function loadCollections(collections, target) {
     let items = [];
     target.timing = {};
-
     _.forEach(collections, function(item, key) {
         let checkModel = c._modelsPath + key + '.json';
         // if instance is date-based
@@ -63,19 +61,12 @@ function loadCollections (collections, target) {
         // save read file time
         target.timing[key] = Date.now();
     });
-
     target.Models = items;
     return target;
 };
 
 /**
  * Update in collection logic
- *
- * @param collection {array}
- * @param query {object}
- * @param data {object}
- * @param multi {boolean} — multi-replacement
- * @returns {array} — updated collection
  */
 function updateFiltered(collection, query, data, multi) {
     // break 2 loops at once - multi : false
@@ -95,11 +86,6 @@ function updateFiltered(collection, query, data, multi) {
 
 /**
  * Remove items from collection
- *
- * @param collection {array}
- * @param query {object}
- * @param multi {boolean} — multi-remove
- * @returns {array} — updated collection
  */
 function removeFiltered(collection, query, multi) {
     // break 2 loops at once -  multi : false
@@ -119,12 +105,8 @@ function removeFiltered(collection, query, multi) {
 
 /**
  * Check timeout for update data from file
- *
- * @param file {string}
- * @param force {boolean}
- * @returns {array} - collection
  */
-function checkCache (file, force) {
+function checkCache(file, force) {
     let model = getModel(file);
     let modelTime = new Date(_self.timing[model]);
     modelTime.setMinutes(modelTime.getMinutes() + _self.cacheTime);
@@ -138,9 +120,6 @@ function checkCache (file, force) {
 
 /**
  * Get name of model by filename
- *
- * @param model {string}
- * @returns {string} — model name
  */
 function getModel(model) {
     if (_opts.dateBased == true) {
@@ -157,9 +136,6 @@ function getModel(model) {
 
 /**
  * Connect logic with collections
- *
- * @param schema {string}
- * @returns {object} — instance
  */
 function connect(schema) {
     _opts.url = schema + '.json';
@@ -167,16 +143,17 @@ function connect(schema) {
     if (isValidPath(schema + '.json')) {
         _schema.url = schema + '.json';
         _schema.content = require(_schema.url);
-
         _self._schema = _schema;
         if (_schema.content) {
             _self = loadCollections(_schema.content, _self);
         }
         return _self;
     } else {
-        throw new Error(`The same model is already exist DB Path:
-        [${_opts.url}]
-        does not seem to be valid. Recheck the path and try again`);
+        throw new Error(`
+            The same model is already exist DB Path:
+            [${_opts.url}]
+            does not seem to be valid. Recheck the path and try again
+        `);
     }
 };
 
@@ -185,7 +162,7 @@ function connect(schema) {
  *  Module exports
  *
  **************************************/
-module.exports = function (opts) {
+module.exports = function(opts) {
 
     _opts = _.merge(opts, _opts);
     _opts.url && connect(_opts.url);
@@ -194,10 +171,8 @@ module.exports = function (opts) {
         _f: _self._f,
         _schema: _self._schema,
         connect: connect,
-        select: function (model) {
-
+        select: function(model) {
             let _file = '';
-
             if (_opts.dateBased === true) {
                 _file = __modelsPath + getToday() + '/' + model + '.json';
                 _file = modelDateBased(this._f, model);
@@ -206,12 +181,11 @@ module.exports = function (opts) {
             }
 
             return {
-
                 _f: _file,
                 _schema: {
                     content: _self._schema.content[getModel(_file)]
                 },
-                search: function (query, one) {
+                search: function(query, one) {
                     let collection = checkCache(this._f);
                     let copyCollection = _.cloneDeep(collection);
                     objectLowercase(copyCollection);
@@ -226,7 +200,6 @@ module.exports = function (opts) {
                             let elements = _.filter(collection, function(item) {
                                 return _.includes(IDs, item._id);
                             });
-
                             if (one) {
                                 return elements[0];
                             } else {
@@ -235,7 +208,6 @@ module.exports = function (opts) {
                         } else {
                             return [];
                         }
-
                     }
                 },
                 read: function() {
@@ -253,14 +225,12 @@ module.exports = function (opts) {
                 find: function(query) {
                     return this.search(query);
                 },
-                findOne: function (query) {
+                findOne: function(query) {
                     return this.search(query, true);
                 },
                 save: function(data) {
-
                     let collection = checkCache(this._f, true);
                     let schema = _self._schema.content[getModel(this._f)].fields;
-
                     // if data is Array
                     if (typeof data === 'object' && data.length) {
                         if (data.length === 1) {
@@ -295,7 +265,6 @@ module.exports = function (opts) {
                         writeToFile(this._f, collection);
                         return data;
                     }
-
                     data._id = uuid.v4().replace(/-/g, '');
                     Opts.created_at && !data.created_at && (data.created_at = new Date());
                     collection.push(data);
@@ -303,38 +272,24 @@ module.exports = function (opts) {
                     return data;
                 },
                 update: function(query, data, options) {
-                    // console.log('update query', query, data)
-                    let ret = {},
-                        collection = checkCache(this._f, true); // update
-
+                    let collection = checkCache(this._f, true); // force load
                     let records = _.find(collection, query);
-                    // console.log('find records', records);
                     if (_.isObject(records) || _.isArray(records)) {
                         data.updated_at = new Date();
                         if (options && options.multi) {
                             collection = updateFiltered(collection, query, data, true);
-                            ret.updated = records.length;
-                            ret.inserted = 0;
                         } else {
                             collection = updateFiltered(collection, query, data, false);
-                            // console.log('updated collection', collection);
-                            ret.updated = 1;
-                            ret.inserted = 0;
                         }
                     } else {
                         if (options && options.upsert) {
                             data._id = uuid.v4().replace(/-/g, '');
                             collection.push(data);
-                            ret.updated = 0;
-                            ret.inserted = 1;
-                        } else {
-                            ret.updated = 0;
-                            ret.inserted = 0;
                         }
                     }
                     _self.Models[getModel(this._f)] = collection;
                     writeToFile(this._f, collection);
-                    return ret;
+                    return data;
                 },
                 remove: function(query, multi) {
                     if (query) {
@@ -368,7 +323,7 @@ module.exports = function (opts) {
                     }
                     return null;
                 },
-                paginate: function (count, filter, sort) {
+                paginate: function(count, filter, sort) {
                     let data;
                     if (filter) {
                         data = this.search(filter);
@@ -402,13 +357,13 @@ module.exports = function (opts) {
                         return true;
                     }
                 },
-                importJSON: function (data) {
+                importJSON: function(data) {
                     let schema = _self._schema.content[getModel(this._f)].fields;
                     // if data if object
                     if (typeof data === 'object' && _.size(data)) {
                         // check & extend prop if needed
-                        _.forEach(data, function (content, index) {
-                            _.forEach(schema, function (item) {
+                        _.forEach(data, function(content, index) {
+                            _.forEach(schema, function(item) {
                                 if (/|/i.test(item)) {
                                     item = item.split(':')[0];
                                 } else {
