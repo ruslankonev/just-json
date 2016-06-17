@@ -45,6 +45,19 @@ const __modelsPath = __appPath + '/stores/db/';
  * @param  {array} collections содержание файла схемы
  * @return {object} target      получатель - this
  ********************************************************************/
+/**
+ * (description)
+ *
+ * @param collections (description)
+ * @param target (description)
+ * @returns (description)
+ */
+/**
+ * (description)
+ *
+ * @param item (description)
+ * @param key (description)
+ */
 var loadCollections = function (collections, target) {
     let items = [];
     target.timing = {};
@@ -65,6 +78,15 @@ var loadCollections = function (collections, target) {
 /**
  * Обноление записей в коллекции
  ********************************************************************/
+/**
+ * (description)
+ *
+ * @param collection (description)
+ * @param query (description)
+ * @param data (description)
+ * @param multi (description)
+ * @returns (description)
+ */
 var updateFiltered = function(collection, query, data, multi) {
     // break 2 loops at once - multi : false
     loop: for (let i = collection.length - 1; i >= 0; i--) {
@@ -84,6 +106,14 @@ var updateFiltered = function(collection, query, data, multi) {
 /**
  * Удаление записей из коллекции
  ********************************************************************/
+/**
+ * (description)
+ *
+ * @param collection (description)
+ * @param query (description)
+ * @param multi (description)
+ * @returns (description)
+ */
 var removeFiltered = function(collection, query, multi) {
     // break 2 loops at once -  multi : false
     loop: for (let i = collection.length - 1; i >= 0; i--) {
@@ -103,6 +133,13 @@ var removeFiltered = function(collection, query, multi) {
 /**
  * Проверка на необходимость чтения данных из кеша
  ********************************************************************/
+/**
+ * (description)
+ *
+ * @param file (description)
+ * @param force (description)
+ * @returns (description)
+ */
 var checkCache = function (file, force) {
     let model = getModel(file);
     let modelTime = new Date(_self.timing[model]);
@@ -118,6 +155,12 @@ var checkCache = function (file, force) {
 /**
  * Получение имени коллекции
  ********************************************************************/
+/**
+ * (description)
+ *
+ * @param model (description)
+ * @returns (description)
+ */
 var getModel = function(model) {
     if (Opts.dateBased == true) {
         return model
@@ -136,6 +179,12 @@ var getModel = function(model) {
 /**
  * Соединение с коллекциями
  ********************************************************************/
+/**
+ * (description)
+ *
+ * @param schema (description)
+ * @returns (description)
+ */
 var connect = function(schema) {
     Opts.url = schema + '.json';
     let _schema = {};
@@ -160,6 +209,28 @@ var connect = function(schema) {
  *  Main object
  *
  *****************************************************/
+/**
+ * (description)
+ *
+ * @param opts (description)
+ * @returns (description)
+ */
+/**
+ * (description)
+ *
+ * @param item (description)
+ */
+/**
+ * (description)
+ *
+ * @param content (description)
+ * @param index (description)
+ */
+/**
+ * (description)
+ *
+ * @param item (description)
+ */
 var DB = function(opts) {
 
     _.merge(Opts, opts);
@@ -181,6 +252,14 @@ var DB = function(opts) {
         /**
          * Динамичесское добавление моделей
          ********************************************************************/
+        /**
+         * (description)
+         *
+         * @param name (description)
+         * @param fields (description)
+         * @param temporary (description)
+         * @returns (description)
+         */
         appendModel: function (name, fields, temporary) {
             if (_self.Models[name] != undefined) {
                 throw new Error('The same model is already exist');
@@ -198,11 +277,23 @@ var DB = function(opts) {
             return this.select(name);
         },
 
+        /**
+         * (description)
+         *
+         * @param file (description)
+         * @returns (description)
+         */
         load: function(file) {
             _self._f = file;
             return _self;
         },
 
+        /**
+         * (description)
+         *
+         * @param model (description)
+         * @returns (description)
+         */
         select: function(model) {
 
             let _file = '';
@@ -229,6 +320,13 @@ var DB = function(opts) {
                  * Поиск запроса в объекте с lowercase'ом строковых значений в объекте
                  * поиска и запроса
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @param query (description)
+                 * @param one (description)
+                 * @returns (description)
+                 */
                 search: function(query, one) {
                     let collection = checkCache(this._f);
                     let copyCollection = _.cloneDeep(collection);
@@ -241,6 +339,12 @@ var DB = function(opts) {
                         let result = _.filter(copyCollection, minifyQuery);
                         if (JSON.stringify(result) !== JSON.stringify([])) {
                             let IDs = _.toArray(_.mapValues(result, '_id'));
+                            /**
+                             * (description)
+                             *
+                             * @param item (description)
+                             * @returns (description)
+                             */
                             let elements = _.filter(collection, function(item) {
                                 return _.includes(IDs, item._id);
                             });
@@ -260,6 +364,11 @@ var DB = function(opts) {
                 /*********************************************************************
                  * Получение всех данных из модели
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @returns (description)
+                 */
                 read: function() {
                     return checkCache(this._f);
                 },
@@ -267,6 +376,13 @@ var DB = function(opts) {
                 /*********************************************************************
                  * Чтение данных по ID из объекта
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @param id (description)
+                 * @param key (description)
+                 * @returns (description)
+                 */
                 readById: function(id, key) {
                     let collection = checkCache(this._f);
                     key = key || '_id';
@@ -281,6 +397,12 @@ var DB = function(opts) {
                  * Поиск данных по параметрам, чтение из файла,
                  * без указания параметров – вывод всех данных в коллекции
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @param query (description)
+                 * @returns (description)
+                 */
                 find: function(query) {
                     return this.search(query);
                 },
@@ -288,6 +410,12 @@ var DB = function(opts) {
                 /*********************************************************************
                  * Поиск одной записи в коллекции, согласно запроса
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @param query (description)
+                 * @returns (description)
+                 */
                 findOne: function(query) {
                     return this.search(query, true);
                 },
@@ -295,6 +423,12 @@ var DB = function(opts) {
                 /*********************************************************************
                  * Добавление записи в коллекцию
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @param data (description)
+                 * @returns (description)
+                 */
                 save: function(data) {
                     // Получаем текущую коллекцию
                     let collection = checkCache(this._f, true);
@@ -350,6 +484,14 @@ var DB = function(opts) {
                  * @param  {[type]} data    данные
                  * @param  {object} options {multi: false} - multiupdate - замена всех данных
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @param query (description)
+                 * @param data (description)
+                 * @param options (description)
+                 * @returns (description)
+                 */
                 update: function(query, data, options) {
                     // console.log('update query', query, data)
                     let ret = {},
@@ -392,6 +534,13 @@ var DB = function(opts) {
                  * @param  {[type]} query параметры выборки
                  * @param  {[type]} multi множественное удаление
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @param query (description)
+                 * @param multi (description)
+                 * @returns (description)
+                 */
                 remove: function(query, multi) {
                     if (query) {
                         let collection = checkCache(this._f, true);
@@ -420,6 +569,11 @@ var DB = function(opts) {
                  * надо проверить, если надо как вести себя будет в реалтайме, для большого
                  * количества юзеров
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @param cb (description)
+                 */
                 empty: function(cb) {
                     _self.Models[getModel(this._f)] = [];
                     writeToFile(this._f);
@@ -430,6 +584,13 @@ var DB = function(opts) {
                  *  Получение первой записи исходя из заданной сортировки
                  *  Предустановленное значение 'asc'
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @param order (description)
+                 * @param query (description)
+                 * @returns (description)
+                 */
                 first: function(order, query) {
                     !order && (order = 'asc');
                     let data = _.orderBy(this.search(query, true), 'created_at', order);
@@ -451,6 +612,14 @@ var DB = function(opts) {
                  *     items: []
                  * }
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @param count (description)
+                 * @param filter (description)
+                 * @param sort (description)
+                 * @returns (description)
+                 */
                 paginate: function (count, filter, sort) {
                     let data;
                     if (filter) {
@@ -468,6 +637,11 @@ var DB = function(opts) {
                 /*********************************************************************
                  * Количество записей в коллекции
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @returns (description)
+                 */
                 count: function() {
                     return (checkCache(this._f)).length;
                 },
@@ -477,6 +651,12 @@ var DB = function(opts) {
                  * Использовать !КРАЙНЕ осторожно! - используется для синхронизации
                  * данных с сервером.
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @param data (description)
+                 * @returns (description)
+                 */
                 sync: function(data) {
                     let In = JSON.stringify(data);
                     let Has = JSON.stringify(checkCache(this._f));
@@ -500,6 +680,12 @@ var DB = function(opts) {
                  *  Импрот JSON-данных в выбранную модель.
                  *  полностью импортирует данные с добавлением внутреннего поля _id
                  ********************************************************************/
+                /**
+                 * (description)
+                 *
+                 * @param data (description)
+                 * @returns (description)
+                 */
                 importJSON: function (data) {
                     let schema = _self._schema.content[getModel(this._f)].fields;
                     // если входные данные — Объект

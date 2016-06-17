@@ -23,21 +23,19 @@ require('./helpers');
 /***************************************
  *  Initial db options
  **************************************/
-let c = {
-    _modelsPath: '',
-    _self: {
-        cacheTime: 5,   // in minutes
-        _schema: {
-            url: '',
-            content: {}
-        },
-        Models: []
+let _modelsPath = '';
+let _self = {
+    cacheTime: 5,   // in minutes
+    _schema: {
+        url: '',
+        content: {}
     },
-    _opts: {
-        dateBased: false,
-        created_at: true,
-        url: null,
-    }
+    Models: []
+};
+let _opts = {
+    dateBased: false,
+    created_at: true,
+    url: null,
 };
 
 /***************************************
@@ -145,7 +143,7 @@ function checkCache (file, force) {
  * @returns {string} — model name
  */
 function getModel(model) {
-    if (Opts.dateBased == true) {
+    if (_opts.dateBased == true) {
         return model
             .replace(__modelsPath, '')
             .replace('.json', '')
@@ -164,7 +162,7 @@ function getModel(model) {
  * @returns {object} — instance
  */
 function connect(schema) {
-    Opts.url = schema + '.json';
+    _opts.url = schema + '.json';
     let _schema = {};
     if (isValidPath(schema + '.json')) {
         _schema.url = schema + '.json';
@@ -177,7 +175,7 @@ function connect(schema) {
         return _self;
     } else {
         throw new Error(`The same model is already exist DB Path:
-        [${Opts.url}]
+        [${_opts.url}]
         does not seem to be valid. Recheck the path and try again`);
     }
 };
@@ -187,8 +185,249 @@ function connect(schema) {
  *  Module exports
  *
  **************************************/
-module.exports = function (config) {
-    config = _.merge(c, config);
+module.exports = function (opts) {
 
+    _opts = _.merge(opts, _opts);
+    _opts.url && connect(_opts.url);
+
+    return {
+        _f: _self._f,
+        _schema: _self._schema,
+        connect: connect,
+        select: function (model) {
+
+            let _file = '';
+
+            if (_opts.dateBased === true) {
+                _file = __modelsPath + getToday() + '/' + model + '.json';
+                _file = modelDateBased(this._f, model);
+            } else {
+                _file = __modelsPath + model + '.json';
+            }
+
+            return {
+
+                _f: _file,
+                _schema: {
+                    content: _self._schema.content[getModel(_file)]
+                },
+                search: function (query, one) {
+                    let collection = checkCache(this._f);
+                    let copyCollection = _.cloneDeep(collection);
+                    objectLowercase(copyCollection);
+                    if (!query) {
+                        return collection;
+                    } else {
+                        let minifyQuery = query;
+                        objectLowercase(minifyQuery);
+                        let result = _.filter(copyCollection, minifyQuery);
+                        if (JSON.stringify(result) !== JSON.stringify([])) {
+                            let IDs = _.toArray(_.mapValues(result, '_id'));
+                            let elements = _.filter(collection, function(item) {
+                                return _.includes(IDs, item._id);
+                            });
+
+                            if (one) {
+                                return elements[0];
+                            } else {
+                                return elements;
+                            }
+                        } else {
+                            return [];
+                        }
+
+                    }
+                },
+                read: function() {
+                    return checkCache(this._f);
+                },
+                readById: function(id, key) {
+                    let collection = checkCache(this._f);
+                    key = key || '_id';
+                    let resi = _.find(collection, {
+                        // [key]: `"${id}"`
+                        [key]: id
+                    });
+                    return resi;
+                },
+                find: function(query) {
+                    return this.search(query);
+                },
+                findOne: function (query) {
+                    return this.search(query, true);
+                },
+                save: function(data) {
+
+                    let collection = checkCache(this._f, true);
+                    let schema = _self._schema.content[getModel(this._f)].fields;
+
+                    // if data is Array
+                    if (typeof data === 'object' && data.length) {
+                        if (data.length === 1) {
+                            if (data[0].length > 0) {
+                                data = data[0];
+                            }
+                        }
+                        Opts.created_at && !data['created_at'] && (data['created_at'] = new Date());
+                        let retCollection = [];
+                        for (let i = data.length - 1; i >= 0; i--) {
+                            let d = data[i];
+                            d._id = uuid.v4().replace(/-/g, '');
+                            _self.Models[getModel(this._f)].push(d);
+                            collection.push(d);
+                            retCollection.push(d);
+                        }
+                        writeToFile(this._f, collection);
+                        return retCollection;
+                    } else if (typeof data === 'object' && _.size(data)) {
+                        // if data is object
+                        _.forEach(schema, function(item) {
+                            if (/|/i.test(item)) {
+                                item = item.split(':')[0];
+                            } else {
+                                !data[item] && (data[item] = '');
+                            }
+                        });
+                        data._id = uuid.v4().replace(/-/g, '');
+                        Opts.created_at && !data.created_at && (data.created_at = new Date());
+                        _self.Models[getModel(this._f)].push(data);
+                        collection.push(data);
+                        writeToFile(this._f, collection);
+                        return data;
+                    }
+
+                    data._id = uuid.v4().replace(/-/g, '');
+                    Opts.created_at && !data.created_at && (data.created_at = new Date());
+                    collection.push(data);
+                    writeToFile(this._f, collection);
+                    return data;
+                },
+                update: function(query, data, options) {
+                    // console.log('update query', query, data)
+                    let ret = {},
+                        collection = checkCache(this._f, true); // update
+
+                    let records = _.find(collection, query);
+                    // console.log('find records', records);
+                    if (_.isObject(records) || _.isArray(records)) {
+                        data.updated_at = new Date();
+                        if (options && options.multi) {
+                            collection = updateFiltered(collection, query, data, true);
+                            ret.updated = records.length;
+                            ret.inserted = 0;
+                        } else {
+                            collection = updateFiltered(collection, query, data, false);
+                            // console.log('updated collection', collection);
+                            ret.updated = 1;
+                            ret.inserted = 0;
+                        }
+                    } else {
+                        if (options && options.upsert) {
+                            data._id = uuid.v4().replace(/-/g, '');
+                            collection.push(data);
+                            ret.updated = 0;
+                            ret.inserted = 1;
+                        } else {
+                            ret.updated = 0;
+                            ret.inserted = 0;
+                        }
+                    }
+                    _self.Models[getModel(this._f)] = collection;
+                    writeToFile(this._f, collection);
+                    return ret;
+                },
+                remove: function(query, multi) {
+                    if (query) {
+                        let collection = checkCache(this._f, true);
+                        if (typeof multi === 'undefined') {
+                            multi = true;
+                        }
+                        try {
+                            collection = removeFiltered(collection, query, multi);
+                            _self.Models[getModel(this._f)] = collection;
+                            writeToFile(this._f, collection);
+                        } catch (err) {
+                            return false;
+                        }
+                    } else {
+                        removeFile(this._f);
+                        delete _self.Models[getModel(this._f)];
+                    }
+                    return true;
+                },
+                empty: function(cb) {
+                    _self.Models[getModel(this._f)] = [];
+                    writeToFile(this._f);
+                    cb();
+                },
+                first: function(order, query) {
+                    !order && (order = 'asc');
+                    let data = _.orderBy(this.search(query, true), 'created_at', order);
+                    if (data[0]) {
+                        return data[0];
+                    }
+                    return null;
+                },
+                paginate: function (count, filter, sort) {
+                    let data;
+                    if (filter) {
+                        data = this.search(filter);
+                    } else {
+                        data = this.read();
+                    }
+                    if (sort) {
+                        data = _.orderBy(data, 'created_at', sort);
+                    }
+                    let resp = paginator.paginate(count, data);
+                    return resp;
+                },
+                count: function() {
+                    return (checkCache(this._f)).length;
+                },
+                sync: function(data) {
+                    let In = JSON.stringify(data);
+                    let Has = JSON.stringify(checkCache(this._f));
+
+                    if (In != Has) {
+                        let model = getModel(this._f);
+                        try {
+                            writeToFile(this._f, data);
+                            _self.Models[model] = data;
+                            winston.info('Syncing', model, 'db');
+                            return true;
+                        } catch (err) {
+                            return false;
+                        }
+                    } else {
+                        return true;
+                    }
+                },
+                importJSON: function (data) {
+                    let schema = _self._schema.content[getModel(this._f)].fields;
+                    // if data if object
+                    if (typeof data === 'object' && _.size(data)) {
+                        // check & extend prop if needed
+                        _.forEach(data, function (content, index) {
+                            _.forEach(schema, function (item) {
+                                if (/|/i.test(item)) {
+                                    item = item.split(':')[0];
+                                } else {
+                                    !data[index][item] && (data[index][item] = '');
+                                }
+                            });
+                            data[index]._id = uuid.v4().replace(/-/g, '');
+                            // we have a created_at field? No? Create them.
+                            Opts.created_at && !data[index].created_at && (data[index].created_at = new Date());
+                        });
+                        // update memory model
+                        _self.Models[getModel(this._f)].push(data);
+                        writeToFile(this._f, data);
+                        return data;
+                    }
+                }
+            }
+        }
+
+    }
 
 }
