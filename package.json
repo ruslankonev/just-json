@@ -11,6 +11,7 @@
     "url": "git+https://github.com/ruslankonev/just-json.git"
   },
   "keywords": [
+    "just-json",
     "json",
     "database",
     "jsondb",
