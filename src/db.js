@@ -18,7 +18,7 @@ const fs = require('fs');
 const _ = require('lodash');
 const uuid = require('node-uuid');
 const winston = require('winston');
-require('./helpers');
+let h;
 
 /***************************************
  *  Initial db options
@@ -50,12 +50,12 @@ let _opts = {
 function loadCollections(collections, target) {
     let items = [];
     target.timing = {};
-    _.forEach(collections, function(item, key) {
-        let checkModel = c._modelsPath + key + '.json';
+    _.forEach(collections, function (item, key) {
+        let checkModel = _modelsPath + key + '.json';
         // if instance is date-based
-        checkModel = modelDateBased(checkModel, key);
+        checkModel = h.modelDateBased(checkModel, key);
         // if we have model & file does't exist — we create new file
-        !isValidPath(checkModel) && writeToFile(checkModel);
+        !h.isValidPath(checkModel) && h.writeToFile(checkModel);
         // load collections to memory
         items[key] = require(checkModel);
         // save read file time
@@ -112,7 +112,7 @@ function checkCache(file, force) {
     modelTime.setMinutes(modelTime.getMinutes() + _self.cacheTime);
     if (Date.now() > modelTime.getTime() || force) {
         _self.timing[model] = Date.now();
-        return readData(file);
+        return h.readData(file);
     } else {
         return _self.Models[model];
     };
@@ -124,13 +124,13 @@ function checkCache(file, force) {
 function getModel(model) {
     if (_opts.dateBased == true) {
         return model
-            .replace(__modelsPath, '')
+            .replace(_modelsPath, '')
             .replace('.json', '')
-            .replace(getToday(), '')
+            .replace(h.getToday(), '')
             .replace('/', '');
     }
     return model
-        .replace(__modelsPath, '')
+        .replace(_modelsPath, '')
         .replace('.json', '');
 };
 
@@ -140,20 +140,21 @@ function getModel(model) {
 function connect(schema) {
     _opts.url = schema + '.json';
     let _schema = {};
-    if (isValidPath(schema + '.json')) {
+    _modelsPath = schema.replace('/_schemas', '/db/');
+
+    if (h.isValidPath(schema + '.json')) {
         _schema.url = schema + '.json';
         _schema.content = require(_schema.url);
         _self._schema = _schema;
         if (_schema.content) {
             _self = loadCollections(_schema.content, _self);
         }
+
         return _self;
     } else {
-        throw new Error(`
-            The same model is already exist DB Path:
-            [${_opts.url}]
-            does not seem to be valid. Recheck the path and try again
-        `);
+        throw new Error(`The schema url:
+    [${_opts.url}]
+does not seem to be valid. Recheck the path and try again`);
     }
 };
 
@@ -163,8 +164,10 @@ function connect(schema) {
  *
  **************************************/
 module.exports = function(opts) {
+    _opts = _.merge(_opts, opts);
+    _opts._modelsPath = _opts.url.replace('/_schemas', '/db/');
 
-    _opts = _.merge(opts, _opts);
+    h = require('./helpers')(_opts);
     _opts.url && connect(_opts.url);
 
     return {
@@ -174,10 +177,10 @@ module.exports = function(opts) {
         select: function(model) {
             let _file = '';
             if (_opts.dateBased === true) {
-                _file = __modelsPath + getToday() + '/' + model + '.json';
-                _file = modelDateBased(this._f, model);
+                _file = _modelsPath + h.getToday() + '/' + model + '.json';
+                _file = h.modelDateBased(this._f, model);
             } else {
-                _file = __modelsPath + model + '.json';
+                _file = _modelsPath + model + '.json';
             }
 
             return {
@@ -188,12 +191,12 @@ module.exports = function(opts) {
                 search: function(query, one) {
                     let collection = checkCache(this._f);
                     let copyCollection = _.cloneDeep(collection);
-                    objectLowercase(copyCollection);
+                    h.objectLowercase(copyCollection);
                     if (!query) {
                         return collection;
                     } else {
                         let minifyQuery = query;
-                        objectLowercase(minifyQuery);
+                        h.objectLowercase(minifyQuery);
                         let result = _.filter(copyCollection, minifyQuery);
                         if (JSON.stringify(result) !== JSON.stringify([])) {
                             let IDs = _.toArray(_.mapValues(result, '_id'));
@@ -247,7 +250,7 @@ module.exports = function(opts) {
                             collection.push(d);
                             retCollection.push(d);
                         }
-                        writeToFile(this._f, collection);
+                        h.writeToFile(this._f, collection);
                         return retCollection;
                     } else if (typeof data === 'object' && _.size(data)) {
                         // if data is object
@@ -262,13 +265,13 @@ module.exports = function(opts) {
                         Opts.created_at && !data.created_at && (data.created_at = new Date());
                         _self.Models[getModel(this._f)].push(data);
                         collection.push(data);
-                        writeToFile(this._f, collection);
+                        h.writeToFile(this._f, collection);
                         return data;
                     }
                     data._id = uuid.v4().replace(/-/g, '');
                     Opts.created_at && !data.created_at && (data.created_at = new Date());
                     collection.push(data);
-                    writeToFile(this._f, collection);
+                    h.writeToFile(this._f, collection);
                     return data;
                 },
                 update: function(query, data, options) {
@@ -288,7 +291,7 @@ module.exports = function(opts) {
                         }
                     }
                     _self.Models[getModel(this._f)] = collection;
-                    writeToFile(this._f, collection);
+                    h.writeToFile(this._f, collection);
                     return data;
                 },
                 remove: function(query, multi) {
@@ -300,19 +303,19 @@ module.exports = function(opts) {
                         try {
                             collection = removeFiltered(collection, query, multi);
                             _self.Models[getModel(this._f)] = collection;
-                            writeToFile(this._f, collection);
+                            h.writeToFile(this._f, collection);
                         } catch (err) {
                             return false;
                         }
                     } else {
-                        removeFile(this._f);
+                        h.removeFile(this._f);
                         delete _self.Models[getModel(this._f)];
                     }
                     return true;
                 },
                 empty: function(cb) {
                     _self.Models[getModel(this._f)] = [];
-                    writeToFile(this._f);
+                    h.writeToFile(this._f);
                     cb();
                 },
                 first: function(order, query) {
@@ -346,7 +349,7 @@ module.exports = function(opts) {
                     if (In != Has) {
                         let model = getModel(this._f);
                         try {
-                            writeToFile(this._f, data);
+                            h.writeToFile(this._f, data);
                             _self.Models[model] = data;
                             winston.info('Syncing', model, 'db');
                             return true;
@@ -376,7 +379,7 @@ module.exports = function(opts) {
                         });
                         // update memory model
                         _self.Models[getModel(this._f)].push(data);
-                        writeToFile(this._f, data);
+                        h.writeToFile(this._f, data);
                         return data;
                     }
                 }
