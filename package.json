@@ -1,6 +1,6 @@
 {
   "name": "just-json",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Small json-driven flat-files database system",
   "main": "index.js",
   "scripts": {
