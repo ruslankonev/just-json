@@ -241,7 +241,7 @@ module.exports = function(opts) {
                                 data = data[0];
                             }
                         }
-                        Opts.created_at && !data['created_at'] && (data['created_at'] = new Date());
+                        _opts.created_at && !data['created_at'] && (data['created_at'] = new Date());
                         let retCollection = [];
                         for (let i = data.length - 1; i >= 0; i--) {
                             let d = data[i];
@@ -262,14 +262,14 @@ module.exports = function(opts) {
                             }
                         });
                         data._id = uuid.v4().replace(/-/g, '');
-                        Opts.created_at && !data.created_at && (data.created_at = new Date());
+                        _opts.created_at && !data.created_at && (data.created_at = new Date());
                         _self.Models[getModel(this._f)].push(data);
                         collection.push(data);
                         h.writeToFile(this._f, collection);
                         return data;
                     }
                     data._id = uuid.v4().replace(/-/g, '');
-                    Opts.created_at && !data.created_at && (data.created_at = new Date());
+                    _opts.created_at && !data.created_at && (data.created_at = new Date());
                     collection.push(data);
                     h.writeToFile(this._f, collection);
                     return data;
@@ -375,7 +375,7 @@ module.exports = function(opts) {
                             });
                             data[index]._id = uuid.v4().replace(/-/g, '');
                             // we have a created_at field? No? Create them.
-                            Opts.created_at && !data[index].created_at && (data[index].created_at = new Date());
+                            _opts.created_at && !data[index].created_at && (data[index].created_at = new Date());
                         });
                         // update memory model
                         _self.Models[getModel(this._f)].push(data);
