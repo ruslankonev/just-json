@@ -213,8 +213,12 @@ module.exports = function(opts) {
                         }
                     }
                 },
-                read: function() {
-                    return checkCache(this._f);
+                read: function (shuffle) {
+                    if (shuffle) {
+                        return _.shuffle(checkCache(this._f));
+                    } else {
+                        return checkCache(this._f);
+                    }
                 },
                 readById: function(id, key) {
                     let collection = checkCache(this._f);
