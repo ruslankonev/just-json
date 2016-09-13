@@ -17,7 +17,6 @@ const paginator = require('./paginator')();
 const fs = require('fs');
 const _ = require('lodash');
 const uuid = require('node-uuid');
-const winston = require('winston');
 let h;
 
 /***************************************
@@ -184,10 +183,13 @@ module.exports = function(opts) {
             }
 
             return {
+
                 _f: _file,
+
                 _schema: {
                     content: _self._schema.content[getModel(_file)]
                 },
+
                 search: function(query, one) {
                     let collection = checkCache(this._f);
                     let copyCollection = _.cloneDeep(collection);
@@ -213,9 +215,11 @@ module.exports = function(opts) {
                         }
                     }
                 },
+
                 read: function() {
                     return checkCache(this._f);
                 },
+
                 readById: function(id, key) {
                     let collection = checkCache(this._f);
                     key = key || '_id';
@@ -225,12 +229,15 @@ module.exports = function(opts) {
                     });
                     return resi;
                 },
+
                 find: function(query) {
                     return this.search(query);
                 },
+
                 findOne: function(query) {
                     return this.search(query, true);
                 },
+
                 save: function(data) {
                     let collection = checkCache(this._f, true);
                     let schema = _self._schema.content[getModel(this._f)].fields;
@@ -274,6 +281,7 @@ module.exports = function(opts) {
                     h.writeToFile(this._f, collection);
                     return data;
                 },
+
                 update: function(query, data, options) {
                     let collection = checkCache(this._f, true); // force load
                     let records = _.find(collection, query);
@@ -294,6 +302,7 @@ module.exports = function(opts) {
                     h.writeToFile(this._f, collection);
                     return data;
                 },
+
                 remove: function(query, multi) {
                     if (query) {
                         let collection = checkCache(this._f, true);
@@ -313,11 +322,13 @@ module.exports = function(opts) {
                     }
                     return true;
                 },
+
                 empty: function(cb) {
                     _self.Models[getModel(this._f)] = [];
                     h.writeToFile(this._f);
                     cb();
                 },
+
                 first: function(order, query) {
                     !order && (order = 'asc');
                     let data = _.orderBy(this.search(query, true), 'created_at', order);
@@ -326,6 +337,7 @@ module.exports = function(opts) {
                     }
                     return null;
                 },
+
                 paginate: function(count, filter, sort) {
                     let data;
                     if (filter) {
@@ -339,9 +351,11 @@ module.exports = function(opts) {
                     let resp = paginator.paginate(count, data);
                     return resp;
                 },
+
                 count: function() {
                     return (checkCache(this._f)).length;
                 },
+
                 sync: function(data) {
                     let In = JSON.stringify(data);
                     let Has = JSON.stringify(checkCache(this._f));
@@ -351,7 +365,12 @@ module.exports = function(opts) {
                         try {
                             h.writeToFile(this._f, data);
                             _self.Models[model] = data;
-                            winston.info('Syncing', model, 'db');
+
+                            process.env 
+                                && process.env.NODE_ENV
+                                && process.env.NODE_ENV === 'development'
+                                && console.log('Syncing', model, 'db');
+
                             return true;
                         } catch (err) {
                             return false;
@@ -360,6 +379,7 @@ module.exports = function(opts) {
                         return true;
                     }
                 },
+
                 importJSON: function(data) {
                     let schema = _self._schema.content[getModel(this._f)].fields;
                     // if data if object
@@ -375,7 +395,9 @@ module.exports = function(opts) {
                             });
                             data[index]._id = uuid.v4().replace(/-/g, '');
                             // we have a created_at field? No? Create them.
-                            _opts.created_at && !data[index].created_at && (data[index].created_at = new Date());
+                            _opts.created_at
+                                && !data[index].created_at
+                                && (data[index].created_at = new Date());
                         });
                         // update memory model
                         _self.Models[getModel(this._f)].push(data);
@@ -383,6 +405,7 @@ module.exports = function(opts) {
                         return data;
                     }
                 }
+
             }
         }
 

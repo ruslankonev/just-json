@@ -10,8 +10,6 @@
  */
 const fs = require('fs');
 const _ = require('lodash');
-const winston = require('winston');
-
 
 /**
  *  Module exports
@@ -94,7 +92,11 @@ module.exports = function (config) {
      *  Reading from file
      ********************************************/
     function readFromFile(file) {
-        winston.info('read from file', file);
+        process.env
+            && process.env.NODE_ENV
+            && process.env.NODE_ENV === 'development'
+            && console.log('read from file', file);
+
         return fs.readFileSync(file, 'utf-8');
     };
 
@@ -110,7 +112,10 @@ module.exports = function (config) {
         try {
             return JSON.parse(readFromFile(file));
         } catch (err) {
-            winston.info('ERROR:', err);
+            process.env
+                && process.env.NODE_ENV
+                && process.env.NODE_ENV === 'development'
+                && console.error('ERROR:', err);
         }
     };
 
