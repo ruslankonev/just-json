@@ -32,8 +32,8 @@ let _self = {
     Models: []
 };
 let _opts = {
-    dateBased: false,
     created_at: true,
+    path: null,
     url: null,
 };
 
@@ -51,8 +51,6 @@ function loadCollections(collections, target) {
     target.timing = {};
     _.forEach(collections, function (item, key) {
         let checkModel = _modelsPath + key + '.json';
-        // if instance is date-based
-        checkModel = h.modelDateBased(checkModel, key);
         // if we have model & file does't exist — we create new file
         !h.isValidPath(checkModel) && h.writeToFile(checkModel);
         // load collections to memory
@@ -118,22 +116,6 @@ function checkCache(file, force) {
 };
 
 /**
- * Get name of model by filename
- */
-function getModel(model) {
-    if (_opts.dateBased == true) {
-        return model
-            .replace(_modelsPath, '')
-            .replace('.json', '')
-            .replace(h.getToday(), '')
-            .replace('/', '');
-    }
-    return model
-        .replace(_modelsPath, '')
-        .replace('.json', '');
-};
-
-/**
  * Connect logic with collections
  */
 function connect(schema) {
@@ -175,12 +157,7 @@ module.exports = function(opts) {
         connect: connect,
         select: function(model) {
             let _file = '';
-            if (_opts.dateBased === true) {
-                _file = _modelsPath + h.getToday() + '/' + model + '.json';
-                _file = h.modelDateBased(this._f, model);
-            } else {
-                _file = _modelsPath + model + '.json';
-            }
+            _file = _modelsPath + model + '.json';
 
             return {
 
@@ -366,7 +343,7 @@ module.exports = function(opts) {
                             h.writeToFile(this._f, data);
                             _self.Models[model] = data;
 
-                            process.env 
+                            process.env
                                 && process.env.NODE_ENV
                                 && process.env.NODE_ENV === 'development'
                                 && console.log('Syncing', model, 'db');
