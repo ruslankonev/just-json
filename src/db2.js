@@ -36,7 +36,7 @@ var _conf = {
     storeDir: 'stores/db',
     maxTextLength: MAX_TEXT_LENG
 };
-
+var _schemas = {};
 var _collections = {};
 
 /**
@@ -96,20 +96,38 @@ var addCollection = (col, schema) => {
         mkdirp(d);
     }
     let c = new Collection(name, d, schema);
+    _schemas[name] = schema;
     _collections[name] = c;
     return c;
 };
 
-var loadPersistentData = () => {
-    let sd = _conf.storeDir;
-    let dirs = fs.readdirSync(sd, 'utf8');
-    if (dirs && dirs.length) {
-        dirs.forEach((item) => {
-            let d = item.toLowerCase();
-            let p = fixPath(sd + '/' + d);
-            let c = new Collection(d, p);
-            _collections[d] = c;
-        });
+var loadPersistentData = (schema) => {
+    if (schema) {
+        if (isValidPath(schema + '.json')) {
+            let schemas = require(schema);
+            _.forEach(schemas, function (item, key) {
+                let checkModel = _conf.storeDir + key + '/' + key + '.json';
+                !isValidPath(checkModel) && fs.writeFileSync(file, '', 'utf8');
+
+checkModel);
+
+            });
+        } else {
+            throw new Error(`The schema url:
+        [${schema}.json]
+    does not seem to be valid. Recheck the path and try again`);
+        }
+    } else {
+        let sd = _conf.storeDir;
+        let dirs = fs.readdirSync(sd, 'utf8');
+        if (dirs && dirs.length) {
+            dirs.forEach((item) => {
+                let d = item.toLowerCase();
+                let p = fixPath(sd + '/' + d);
+                let c = new Collection(d, p);
+                _collections[d] = c;
+            });
+        }
     }
 };
 
@@ -127,8 +145,8 @@ var configure = (opt = {}) => {
     if (bella.isNumber(mtl) && mtl > MIN_TEXT_LENG && mtl < MAX_TEXT_LENG) {
         _conf.maxTextLength = mtl;
     }
-
-    loadPersistentData();
+    let schema = opt.schema || null;
+    loadPersistentData(schema);
     return _conf;
 };
 
@@ -176,18 +194,13 @@ var deepSearch = function(needle, obj) {
 ======================================================================
  */
 var DB = {
+    schemas: _schemas,
     configure(opt) {
         return configure(opt);
     },
     getConfigs() {
         return _conf;
     },
-
-    /**
-     * Метод для соединения с коллекциями.
-     * Если запрошенной коллекции не существует,
-     * метод ее создат и вернет пустую
-     */
     select(col, schema) {
         let collection;
         collection = getCollection(col);
@@ -196,7 +209,6 @@ var DB = {
         }
         return collection;
     },
-
     removeCollection(name) {
         return removeCollection(name);
     },
