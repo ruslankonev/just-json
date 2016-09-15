@@ -15,6 +15,9 @@
  *
  **********************************************************************/
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 function take(n, list) {
     return list.slice(0, n);
 }
@@ -41,8 +44,8 @@ function divide(n, list) {
  *
  **********************************************************************/
 var Paginator = {
-    paginate: function(n, list) {
-        return divide(n, list).map(function(items, index) {
+    paginate: function paginate(n, list) {
+        return divide(n, list).map(function (items, index) {
             var number = n * index;
 
             return {
@@ -55,4 +58,4 @@ var Paginator = {
 
 };
 
-export default Paginator;
+exports.default = Paginator;
