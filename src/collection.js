@@ -25,7 +25,7 @@ import fixPath from './fixPath'
  *  Initial options
 ======================================================================
  */
-const EXT = '.json';
+ const EXT = '.json';
 
 /**
  *  Helper functions
@@ -99,6 +99,7 @@ class Collection {
 
     constructor(name, dir, schema = {}) {
         let file = fixPath(dir + '/' + name + EXT);
+        // console.log('passed URL to Collection class', file);
         if (!fs.existsSync(file)) {
             fs.writeFileSync(file, '', 'utf8');
         }

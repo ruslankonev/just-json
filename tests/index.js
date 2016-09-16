@@ -14,14 +14,17 @@
 
 const DB = require('../dist/db2')
 
-// DB.configure({
-//     path: 'stores'
-// });
+DB.configure({
+    path: 'stores/db',
+    schema: __dirname + '/_schemas.json'
+});
 
-console.log('\n\n',DB);
 
 // add collection
 var Movie = DB.select('tosters');
+
+console.log('\n\nDB :',DB);
+
 
 // add item into "Movie" collection
 let key = Movie.add({

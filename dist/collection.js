@@ -127,6 +127,7 @@ var Collection = function () {
         _classCallCheck(this, Collection);
 
         var file = (0, _fixPath2.default)(dir + '/' + name + EXT);
+        // console.log('passed URL to Collection class', file);
         if (!_fs2.default.existsSync(file)) {
             _fs2.default.writeFileSync(file, '', 'utf8');
         }

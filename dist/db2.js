@@ -23,6 +23,10 @@ var _fs2 = _interopRequireDefault(_fs);
 
 var _fp = require('lodash/fp');
 
+var _foreach = require('lodash/foreach');
+
+var _foreach2 = _interopRequireDefault(_foreach);
+
 var _bellajs = require('bellajs');
 
 var _bellajs2 = _interopRequireDefault(_bellajs);
@@ -46,27 +50,19 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 ======================================================================
  */
 var MIN_TEXT_LENG = 0;
-// import uuid from 'node-uuid'
-
 var MAX_TEXT_LENG = 10000;
 
 var _conf = {
     storeDir: 'stores/db',
     maxTextLength: MAX_TEXT_LENG
 };
-
+var _schemas = {};
 var _collections = {};
 
 /**
  *  Helper functions
 ======================================================================
  */
-var getDir = function getDir() {
-    var name = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
-
-    return (0, _fixPath2.default)(_conf.storeDir + '/' + name);
-};
-
 var isValidCol = function isValidCol() {
     var name = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
 
@@ -115,29 +111,48 @@ var addCollection = function addCollection(col, schema) {
     }
 
     var name = _bellajs2.default.strtolower(col);
-    var d = getDir(name);
-    if (!_fs2.default.existsSync(d)) {
-        (0, _mkdirp.sync)(d);
+    if (!_fs2.default.existsSync(_conf.storeDir)) {
+        (0, _mkdirp.sync)(_conf.storeDir);
     }
-    var c = new _collection2.default(name, d, schema);
+    var sd = _conf.storeDir;
+    var c = new _collection2.default(name, sd, schema);
+    _schemas[name] = schema;
     _collections[name] = c;
     return c;
 };
 
-var loadPersistentData = function loadPersistentData() {
-    var sd = _conf.storeDir;
-    var dirs = _fs2.default.readdirSync(sd, 'utf8');
-    if (dirs && dirs.length) {
-        dirs.forEach(function (item) {
-            var d = item.toLowerCase();
-            var p = (0, _fixPath2.default)(sd + '/' + d);
-            var c = new _collection2.default(d, p);
-            _collections[d] = c;
-        });
+var loadPersistentData = function loadPersistentData(schema) {
+    if (schema) {
+        if (isValidPath((0, _fixPath2.default)(schema))) {
+            var schemas = require(schema);
+            (0, _foreach2.default)(schemas, function (value, key) {
+                var name = key.toLowerCase();
+                var dir = _conf.storeDir;
+                var c = new _collection2.default(name, dir, value);
+                _collections[name] = c;
+                _schemas[name] = value;
+            });
+        } else {
+            throw new Error('The schema url:\n        [' + schema + ']\n    does not seem to be valid. Recheck the path and try again');
+        }
+    } else {
+        (function () {
+            var sd = _conf.storeDir;
+            var dirs = _fs2.default.readdirSync(sd, 'utf8');
+            if (dirs && dirs.length) {
+                dirs.forEach(function (item) {
+                    var d = item.toLowerCase().replace(/\.json/, '');
+                    // let p = fixPath(sd + '/' + d);
+                    var p = (0, _fixPath2.default)(sd);
+                    var c = new _collection2.default(d, p);
+                    _collections[d] = c;
+                });
+            }
+        })();
     }
 };
 
-var _configure = function _configure() {
+var configure = function configure() {
     var opt = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
     var p = opt.path || _conf.storeDir;
@@ -153,8 +168,10 @@ var _configure = function _configure() {
     if (_bellajs2.default.isNumber(mtl) && mtl > MIN_TEXT_LENG && mtl < MAX_TEXT_LENG) {
         _conf.maxTextLength = mtl;
     }
-
-    loadPersistentData();
+    var schema = opt.schema || false;
+    loadPersistentData(schema);
+    // console.log('_schemas', _schemas);
+    // console.log('_collections', _collections);
     return _conf;
 };
 
@@ -168,7 +185,7 @@ var isValidPath = function isValidPath(path) {
 };
 
 var objectLowercase = function objectLowercase(obj, caller) {
-    (0, _fp.forEach)(obj, function (key, n) {
+    (0, _foreach2.default)(obj, function (key, n) {
         if (_bellajs2.default.isObject(key)) {
             key = objectLowercase(key);
         } else {
@@ -181,40 +198,19 @@ var objectLowercase = function objectLowercase(obj, caller) {
     return obj;
 };
 
-var deepSearch = function deepSearch(needle, obj) {
-    var Results = [];
-
-    function rollingObject(needle, obj) {
-        (0, _fp.forEach)(Object.keys(obj), function (item, i) {
-            if (item !== needle && _bellajs2.default.isArray(obj[item]) || item !== needle && _bellajs2.default.isObject(obj[item])) {
-                rollingObject(needle, obj[item]);
-            } else if (item === needle) {
-                Results.push(obj[item]);
-            };
-        });
-    }
-    rollingObject(needle, obj);
-    return Results;
-};
-
 /**
  *  DataBase object
 ======================================================================
  */
 var DB = {
-    configure: function configure(opt) {
-        return _configure(opt);
+    schemas: _schemas,
+    config: function config(opts) {
+        if (opts) {
+            return configure(opt);
+        } else {
+            return _conf;
+        }
     },
-    getConfigs: function getConfigs() {
-        return _conf;
-    },
-
-
-    /**
-     * Метод для соединения с коллекциями.
-     * Если запрошенной коллекции не существует,
-     * метод ее создат и вернет пустую
-     */
     select: function select(col, schema) {
         var collection = void 0;
         collection = getCollection(col);

@@ -17,7 +17,8 @@
 ======================================================================
  */
 import fs from 'fs'
-import { forEach, merge, cloneDeep, filter, includes, find, size } from 'lodash/fp'
+import { merge, cloneDeep, filter, includes, find, size } from 'lodash/fp'
+import forEach from 'lodash/foreach'
 import bella from 'bellajs'
 import { execSync as exec } from 'child_process'
 import { sync as mkdirp } from 'mkdirp'
@@ -43,10 +44,6 @@ var _collections = {};
  *  Helper functions
 ======================================================================
  */
-var getDir = (name = '') => {
-    return fixPath(_conf.storeDir + '/' + name);
-};
-
 var isValidCol = (name = '') => {
     let re = /^([A-Z_])+([_A-Z0-9])+$/i;
     return bella.isString(name) && re.test(name);
@@ -91,11 +88,11 @@ var addCollection = (col, schema) => {
     }
 
     let name = bella.strtolower(col);
-    let d = getDir(name);
-    if (!fs.existsSync(d)) {
-        mkdirp(d);
+    if (!fs.existsSync(_conf.storeDir)) {
+        mkdirp(_conf.storeDir);
     }
-    let c = new Collection(name, d, schema);
+    let sd = _conf.storeDir;
+    let c = new Collection(name, sd, schema);
     _schemas[name] = schema;
     _collections[name] = c;
     return c;
@@ -103,18 +100,18 @@ var addCollection = (col, schema) => {
 
 var loadPersistentData = (schema) => {
     if (schema) {
-        if (isValidPath(schema + '.json')) {
+        if (isValidPath(fixPath(schema))) {
             let schemas = require(schema);
-            _.forEach(schemas, function (item, key) {
-                let checkModel = _conf.storeDir + key + '/' + key + '.json';
-                !isValidPath(checkModel) && fs.writeFileSync(file, '', 'utf8');
-
-checkModel);
-
+            forEach(schemas, function (value, key) {
+                let name = key.toLowerCase();
+                let dir = _conf.storeDir;
+                let c = new Collection(name, dir, value);
+                _collections[name] = c;
+                _schemas[name] = value;
             });
         } else {
             throw new Error(`The schema url:
-        [${schema}.json]
+        [${schema}]
     does not seem to be valid. Recheck the path and try again`);
         }
     } else {
@@ -122,8 +119,9 @@ checkModel);
         let dirs = fs.readdirSync(sd, 'utf8');
         if (dirs && dirs.length) {
             dirs.forEach((item) => {
-                let d = item.toLowerCase();
-                let p = fixPath(sd + '/' + d);
+                let d = item.toLowerCase().replace(/\.json/, '');
+                // let p = fixPath(sd + '/' + d);
+                let p = fixPath(sd);
                 let c = new Collection(d, p);
                 _collections[d] = c;
             });
@@ -145,8 +143,10 @@ var configure = (opt = {}) => {
     if (bella.isNumber(mtl) && mtl > MIN_TEXT_LENG && mtl < MAX_TEXT_LENG) {
         _conf.maxTextLength = mtl;
     }
-    let schema = opt.schema || null;
+    let schema = opt.schema || false;
     loadPersistentData(schema);
+    // console.log('_schemas', _schemas);
+    // console.log('_collections', _collections);
     return _conf;
 };
 
@@ -173,21 +173,6 @@ var objectLowercase = function(obj, caller) {
     return obj;
 };
 
-var deepSearch = function(needle, obj) {
-    var Results = [];
-
-    function rollingObject(needle, obj) {
-        forEach(Object.keys(obj), function(item, i) {
-            if (item !== needle && bella.isArray(obj[item]) || item !== needle && bella.isObject(obj[item])) {
-                rollingObject(needle, obj[item]);
-            } else if (item === needle) {
-                Results.push(obj[item]);
-            };
-        });
-    }
-    rollingObject(needle, obj);
-    return Results;
-};
 
 /**
  *  DataBase object
@@ -195,11 +180,12 @@ var deepSearch = function(needle, obj) {
  */
 var DB = {
     schemas: _schemas,
-    configure(opt) {
-        return configure(opt);
-    },
-    getConfigs() {
-        return _conf;
+    config(opts) {
+        if(opts){
+            return configure(opt);
+        } else {
+            return _conf;
+        }
     },
     select(col, schema) {
         let collection;
