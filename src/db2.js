@@ -102,7 +102,7 @@ var loadPersistentData = (schema) => {
     if (schema) {
         if (isValidPath(fixPath(schema))) {
             let schemas = require(schema);
-            forEach(schemas, function (value, key) {
+            forEach(schemas, function(value, key) {
                 let name = key.toLowerCase();
                 let dir = _conf.storeDir;
                 let c = new Collection(name, dir, value);
@@ -181,8 +181,8 @@ var objectLowercase = function(obj, caller) {
 var DB = {
     schemas: _schemas,
     config(opts) {
-        if(opts){
-            return configure(opt);
+        if (opts) {
+            return configure(opts);
         } else {
             return _conf;
         }

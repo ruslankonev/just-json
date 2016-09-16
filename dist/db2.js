@@ -125,7 +125,7 @@ var loadPersistentData = function loadPersistentData(schema) {
     if (schema) {
         if (isValidPath((0, _fixPath2.default)(schema))) {
             var schemas = require(schema);
-            (0, _foreach2.default)(schemas, function (value, key) {
+            (0, _foreach2.default)(schemas, function(value, key) {
                 var name = key.toLowerCase();
                 var dir = _conf.storeDir;
                 var c = new _collection2.default(name, dir, value);
@@ -136,11 +136,11 @@ var loadPersistentData = function loadPersistentData(schema) {
             throw new Error('The schema url:\n        [' + schema + ']\n    does not seem to be valid. Recheck the path and try again');
         }
     } else {
-        (function () {
+        (function() {
             var sd = _conf.storeDir;
             var dirs = _fs2.default.readdirSync(sd, 'utf8');
             if (dirs && dirs.length) {
-                dirs.forEach(function (item) {
+                dirs.forEach(function(item) {
                     var d = item.toLowerCase().replace(/\.json/, '');
                     // let p = fixPath(sd + '/' + d);
                     var p = (0, _fixPath2.default)(sd);
@@ -185,7 +185,7 @@ var isValidPath = function isValidPath(path) {
 };
 
 var objectLowercase = function objectLowercase(obj, caller) {
-    (0, _foreach2.default)(obj, function (key, n) {
+    (0, _foreach2.default)(obj, function(key, n) {
         if (_bellajs2.default.isObject(key)) {
             key = objectLowercase(key);
         } else {
@@ -206,7 +206,7 @@ var DB = {
     schemas: _schemas,
     config: function config(opts) {
         if (opts) {
-            return configure(opt);
+            return configure(opts);
         } else {
             return _conf;
         }
