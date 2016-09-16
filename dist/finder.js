@@ -155,7 +155,7 @@ var Finder = function () {
     key: 'paginate',
     value: function paginate(count, sort) {
       if (sort) {
-        this.entries = sort === 'asc' ? bells.sort(this.entries, '_ts') : bells.sort(this.entries, { '_ts': -1 });
+        this.entries = sort === 'asc' ? _bellajs2.default.sort(this.entries, '_ts') : _bellajs2.default.sort(this.entries, { '_ts': -1 });
       }
       this.entries = _paginator2.default.paginate(count, this.entries);
       return this;

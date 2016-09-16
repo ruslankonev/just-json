@@ -124,8 +124,8 @@ class Finder {
     paginate(count, sort) {
         if (sort) {
             this.entries = (sort === 'asc')
-                ? bells.sort(this.entries, '_ts')
-                : bells.sort(this.entries, {'_ts': -1})
+                ? bella.sort(this.entries, '_ts')
+                : bella.sort(this.entries, {'_ts': -1})
         }
         this.entries = Paginator.paginate(count, this.entries);
         return this;
