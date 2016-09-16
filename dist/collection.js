@@ -159,6 +159,12 @@ var Collection = function () {
             return id;
         }
     }, {
+        key: 'save',
+        value: function save(item) {
+            // alias for compability
+            add(item);
+        }
+    }, {
         key: 'get',
         value: function get(id, fields) {
             var file = this.file;

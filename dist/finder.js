@@ -161,6 +161,11 @@ var Finder = function () {
       return this;
     }
   }, {
+    key: 'one',
+    value: function one() {
+      if (this.entries.length > 0) return this.entries[0];
+    }
+  }, {
     key: 'run',
     value: function run() {
       return _promiseWtf2.default.resolve(this.entries);
