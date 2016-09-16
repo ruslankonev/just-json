@@ -129,6 +129,11 @@ class Collection {
         return id;
     }
 
+    save(item) {
+        // alias for compability
+        add(item)
+    }
+
     get(id, fields) {
         let file = this.file;
 

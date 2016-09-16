@@ -131,6 +131,11 @@ class Finder {
         return this;
     }
 
+    one(){
+        if(this.entries.length > 0)
+            return this.entries[0]
+    }
+
     run() {
       return Promise.resolve(this.entries);
     }

@@ -24,6 +24,7 @@ DB = {
 ## Collection methods
 
 * `add(item)` — add record to collection
+* `save(item)` — alias for add method
 * `get(id, fields)` — retrieve record from collection
 * `update(id, data)` — update record with [id]
 * `remove(id)` — remove record with [id]
@@ -41,6 +42,7 @@ DB = {
 * `lte(key, val)`
 * `matches(key, reg)`
 * `paginate(count, sort)`
+* `one()`
 * `run()`
 
 
