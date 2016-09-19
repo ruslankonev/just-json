@@ -58,7 +58,7 @@ var checkCache = function checkCache(collection, force) {
     var updateTime = new Date(collectionTime + collection.CACHING_TIME * 60000);
     if (Date.now() > updateTime || force) {
         collection.readTime = Date.now();
-        return getColData(collection.file);
+        return collection.collection = getColData(collection.file);
     }
     return collection.collection;
 };
