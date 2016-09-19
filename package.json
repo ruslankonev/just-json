@@ -1,6 +1,6 @@
 {
   "name": "just-json",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Small json-driven flat database",
   "main": "dist/db2.js",
   "scripts": {
