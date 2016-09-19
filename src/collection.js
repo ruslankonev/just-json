@@ -131,7 +131,7 @@ class Collection {
 
     save(item) {
         // alias for compability
-        add(item)
+        this.add(item)
     }
 
     get(id, fields) {

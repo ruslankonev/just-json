@@ -162,7 +162,7 @@ var Collection = function () {
         key: 'save',
         value: function save(item) {
             // alias for compability
-            add(item);
+            this.add(item);
         }
     }, {
         key: 'get',
