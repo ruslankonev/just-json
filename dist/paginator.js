@@ -51,7 +51,9 @@ var Paginator = {
             return {
                 start: number + 1,
                 end: number + items.length,
-                items: items
+                items: items,
+                total: list.length,
+                per_page: n
             };
         });
     }
