@@ -23,9 +23,9 @@ var _fs2 = _interopRequireDefault(_fs);
 
 var _fp = require('lodash/fp');
 
-var _foreach = require('lodash/foreach');
+var _forEach = require('lodash/forEach');
 
-var _foreach2 = _interopRequireDefault(_foreach);
+var _forEach2 = _interopRequireDefault(_forEach);
 
 var _bellajs = require('bellajs');
 
@@ -125,7 +125,7 @@ var loadPersistentData = function loadPersistentData(schema) {
     if (schema) {
         if (isValidPath((0, _fixPath2.default)(schema))) {
             var schemas = require(schema);
-            (0, _foreach2.default)(schemas, function (value, key) {
+            (0, _forEach2.default)(schemas, function (value, key) {
                 var name = key.toLowerCase();
                 var dir = _conf.storeDir;
                 var c = new _collection2.default(name, dir, value);
@@ -185,7 +185,7 @@ var isValidPath = function isValidPath(path) {
 };
 
 var objectLowercase = function objectLowercase(obj, caller) {
-    (0, _foreach2.default)(obj, function (key, n) {
+    (0, _forEach2.default)(obj, function (key, n) {
         if (_bellajs2.default.isObject(key)) {
             key = objectLowercase(key);
         } else {

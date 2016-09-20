@@ -18,7 +18,7 @@
  */
 import fs from 'fs'
 import { merge, cloneDeep, filter, includes, find, size } from 'lodash/fp'
-import forEach from 'lodash/foreach'
+import forEach from 'lodash/forEach'
 import bella from 'bellajs'
 import { execSync as exec } from 'child_process'
 import { sync as mkdirp } from 'mkdirp'
