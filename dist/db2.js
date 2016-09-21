@@ -84,7 +84,7 @@ var getCollection = function getCollection() {
 var _emptyCollection = function _emptyCollection(col) {
     var c = getCollection(col);
     if (c) {
-        var d = c.dir;
+        var d = c.file;
         (0, _child_process.execSync)('rm -rf ' + d);
         return (0, _mkdirp.sync)(d);
     }
@@ -97,7 +97,7 @@ var _removeCollection = function _removeCollection(col) {
         var name = c.name;
         _collections[name] = null;
         delete _collections[name];
-        return (0, _child_process.execSync)('rm -rf ' + c.dir);
+        return (0, _child_process.execSync)('rm -rf ' + c.file);
     }
     return false;
 };

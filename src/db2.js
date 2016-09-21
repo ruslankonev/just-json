@@ -61,7 +61,7 @@ var getCollection = (name = '') => {
 var emptyCollection = (col) => {
     let c = getCollection(col);
     if (c) {
-        let d = c.dir;
+        let d = c.file;
         exec(`rm -rf ${d}`);
         return mkdirp(d);
     }
@@ -74,7 +74,7 @@ var removeCollection = (col) => {
         let name = c.name;
         _collections[name] = null;
         delete _collections[name];
-        return exec(`rm -rf ${c.dir}`);
+        return exec(`rm -rf ${c.file}`);
     }
     return false;
 };
