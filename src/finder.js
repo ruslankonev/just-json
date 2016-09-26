@@ -133,7 +133,8 @@ class Finder {
 
     one(){
         if(this.entries.length > 0)
-            return this.entries[0]
+            this.entries = this.entries[0];
+        return this;
     }
 
     run() {

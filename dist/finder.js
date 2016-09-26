@@ -163,7 +163,8 @@ var Finder = function () {
   }, {
     key: 'one',
     value: function one() {
-      if (this.entries.length > 0) return this.entries[0];
+      if (this.entries.length > 0) this.entries = this.entries[0];
+      return this;
     }
   }, {
     key: 'run',
