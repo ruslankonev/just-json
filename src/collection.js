@@ -89,11 +89,11 @@ var clean = (data, fields = []) => {
 };
 
 var removeKeys = (obj, fields = []) => {
+    let keys = [];
+    if (bella.isString(fields)) {
+        keys = fields.split(' ');
+    }
     if (keys.length > 0) {
-        let keys = [];
-        if (bella.isString(fields)) {
-            keys = fields.split(' ');
-        }
         let o = Object.assign({}, obj);
         for (key of keys) {
             o[key] && delete o[key];

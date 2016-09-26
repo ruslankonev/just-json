@@ -115,18 +115,18 @@ var clean = function clean(data) {
 var removeKeys = function removeKeys(obj) {
     var fields = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
+    var keys = [];
+    if (_bellajs2.default.isString(fields)) {
+        keys = fields.split(' ');
+    }
     if (keys.length > 0) {
-        var _keys = [];
-        if (_bellajs2.default.isString(fields)) {
-            _keys = fields.split(' ');
-        }
         var _o = Object.assign({}, obj);
         var _iteratorNormalCompletion = true;
         var _didIteratorError = false;
         var _iteratorError = undefined;
 
         try {
-            for (var _iterator = _keys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            for (var _iterator = keys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                 key = _step.value;
 
                 _o[key] && delete _o[key];
