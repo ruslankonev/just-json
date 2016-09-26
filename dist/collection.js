@@ -112,6 +112,43 @@ var clean = function clean(data) {
     return o;
 };
 
+var removeKeys = function removeKeys(obj) {
+    var fields = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
+    if (keys.length > 0) {
+        var _keys = [];
+        if (_bellajs2.default.isString(fields)) {
+            _keys = fields.split(' ');
+        }
+        var _o = Object.assign({}, obj);
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = _keys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                key = _step.value;
+
+                _o[key] && delete _o[key];
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                    _iterator.return();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
+        }
+    }
+    return o;
+};
+
 /**
  *  Collection class
  *
@@ -166,7 +203,7 @@ var Collection = function () {
         }
     }, {
         key: 'get',
-        value: function get(id, fields) {
+        value: function get(id, fields, unsetFields) {
             var file = this.file;
 
             // let data = getColData(file);
@@ -185,6 +222,7 @@ var Collection = function () {
             for (var i = 0; i < c.length; i++) {
                 var m = c[i];
                 if (m._id === id) {
+                    m = removeKeys(m, unsetFields);
                     item = clean(m, fields);
                     break;
                 }

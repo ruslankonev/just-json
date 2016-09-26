@@ -88,6 +88,20 @@ var clean = (data, fields = []) => {
     return o;
 };
 
+var removeKeys = (obj, fields = []) => {
+    if (keys.length > 0) {
+        let keys = [];
+        if (bella.isString(fields)) {
+            keys = fields.split(' ');
+        }
+        let o = Object.assign({}, obj);
+        for (key of keys) {
+            o[key] && delete o[key];
+        }
+    }
+    return o;
+}
+
 /**
  *  Collection class
  *
@@ -134,7 +148,7 @@ class Collection {
         this.add(item)
     }
 
-    get(id, fields) {
+    get(id, fields, unsetFields) {
         let file = this.file;
 
         // let data = getColData(file);
@@ -153,6 +167,7 @@ class Collection {
         for (let i = 0; i < c.length; i++) {
             let m = c[i];
             if (m._id === id) {
+                m = removeKeys(m, unsetFields);
                 item = clean(m, fields);
                 break;
             }
