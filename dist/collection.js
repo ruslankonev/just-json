@@ -119,8 +119,8 @@ var removeKeys = function removeKeys(obj) {
     if (_bellajs2.default.isString(fields)) {
         keys = fields.split(' ');
     }
+    var o = Object.assign({}, obj);
     if (keys.length > 0) {
-        var _o = Object.assign({}, obj);
         var _iteratorNormalCompletion = true;
         var _didIteratorError = false;
         var _iteratorError = undefined;
@@ -129,7 +129,7 @@ var removeKeys = function removeKeys(obj) {
             for (var _iterator = keys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                 key = _step.value;
 
-                _o[key] && delete _o[key];
+                o[key] && delete o[key];
             }
         } catch (err) {
             _didIteratorError = true;

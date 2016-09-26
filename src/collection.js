@@ -25,13 +25,13 @@ import fixPath from './fixPath'
  *  Initial options
 ======================================================================
  */
- const EXT = '.json';
+const EXT = '.json';
 
 /**
  *  Helper functions
 ======================================================================
  */
-var checkCache = function (collection, force) {
+var checkCache = function(collection, force) {
     let collectionTime = new Date(collection.readTime).getTime();
     let updateTime = new Date(collectionTime + collection.CACHING_TIME * 60000);
     if (Date.now() > updateTime || force) {
@@ -49,10 +49,10 @@ var getColData = (f) => {
     if (!fs.existsSync(f)) {
         return noop;
     } else {
-        process.env
-        && process.env.NODE_ENV
-        && process.env.NODE_ENV === 'development'
-        && console.log('read from file', f);
+        process.env &&
+            process.env.NODE_ENV &&
+            process.env.NODE_ENV === 'development' &&
+            console.log('read from file', f);
     }
 
     let s = fs.readFileSync(f, 'utf8');
@@ -93,8 +93,8 @@ var removeKeys = (obj, fields = []) => {
     if (bella.isString(fields)) {
         keys = fields.split(' ');
     }
+    let o = Object.assign({}, obj);
     if (keys.length > 0) {
-        let o = Object.assign({}, obj);
         for (key of keys) {
             o[key] && delete o[key];
         }
