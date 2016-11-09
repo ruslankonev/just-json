@@ -13,18 +13,22 @@
 /***************************************
  *  Dependencies
  **************************************/
-const paginator = require('./paginator')();
-const fs = require('fs');
-const _ = require('lodash');
-const uuid = require('node-uuid');
-const winston = require('winston');
-let h;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var paginator = require('./paginator')();
+var fs = require('fs');
+var _ = require('lodash');
+var uuid = require('node-uuid');
+var h = void 0;
 
 /***************************************
  *  Initial db options
  **************************************/
-let _modelsPath = '';
-let _self = {
+var _modelsPath = '';
+var _self = {
     cacheTime: 5, // in minutes
     _schema: {
         url: '',
@@ -32,10 +36,10 @@ let _self = {
     },
     Models: []
 };
-let _opts = {
-    dateBased: false,
+var _opts = {
     created_at: true,
-    url: null,
+    path: null,
+    url: null
 };
 
 /***************************************
@@ -48,12 +52,10 @@ let _opts = {
  *  Load collections from file into memory
  */
 function loadCollections(collections, target) {
-    let items = [];
+    var items = [];
     target.timing = {};
     _.forEach(collections, function (item, key) {
-        let checkModel = _modelsPath + key + '.json';
-        // if instance is date-based
-        checkModel = h.modelDateBased(checkModel, key);
+        var checkModel = _modelsPath + key + '.json';
         // if we have model & file does't exist — we create new file
         !h.isValidPath(checkModel) && h.writeToFile(checkModel);
         // load collections to memory
@@ -70,9 +72,9 @@ function loadCollections(collections, target) {
  */
 function updateFiltered(collection, query, data, multi) {
     // break 2 loops at once - multi : false
-    loop: for (let i = collection.length - 1; i >= 0; i--) {
-        let c = collection[i];
-        for (let p in query) {
+    loop: for (var i = collection.length - 1; i >= 0; i--) {
+        var c = collection[i];
+        for (var p in query) {
             if (p in c && c[p] == query[p]) {
                 collection[i] = _.merge(c, data);
                 if (!multi) {
@@ -89,9 +91,9 @@ function updateFiltered(collection, query, data, multi) {
  */
 function removeFiltered(collection, query, multi) {
     // break 2 loops at once -  multi : false
-    loop: for (let i = collection.length - 1; i >= 0; i--) {
-        let c = collection[i];
-        for (let p in query) {
+    loop: for (var i = collection.length - 1; i >= 0; i--) {
+        var c = collection[i];
+        for (var p in query) {
             if (p in c && c[p] == query[p]) {
                 collection.splice(i, 1);
                 if (!multi) {
@@ -107,8 +109,8 @@ function removeFiltered(collection, query, multi) {
  * Check timeout for update data from file
  */
 function checkCache(file, force) {
-    let model = getModel(file);
-    let modelTime = new Date(_self.timing[model]);
+    var model = getModel(file);
+    var modelTime = new Date(_self.timing[model]);
     modelTime.setMinutes(modelTime.getMinutes() + _self.cacheTime);
     if (Date.now() > modelTime.getTime() || force) {
         _self.timing[model] = Date.now();
@@ -119,27 +121,11 @@ function checkCache(file, force) {
 };
 
 /**
- * Get name of model by filename
- */
-function getModel(model) {
-    if (_opts.dateBased == true) {
-        return model
-            .replace(_modelsPath, '')
-            .replace('.json', '')
-            .replace(h.getToday(), '')
-            .replace('/', '');
-    }
-    return model
-        .replace(_modelsPath, '')
-        .replace('.json', '');
-};
-
-/**
  * Connect logic with collections
  */
 function connect(schema) {
     _opts.url = schema + '.json';
-    let _schema = {};
+    var _schema = {};
     _modelsPath = schema.replace('/_schemas', '/db/');
 
     if (h.isValidPath(schema + '.json')) {
@@ -152,9 +138,7 @@ function connect(schema) {
 
         return _self;
     } else {
-        throw new Error(`The schema url:
-    [${_opts.url}]
-does not seem to be valid. Recheck the path and try again`);
+        throw new Error('The schema url:\n    [' + _opts.url + ']\ndoes not seem to be valid. Recheck the path and try again');
     }
 };
 
@@ -163,7 +147,7 @@ does not seem to be valid. Recheck the path and try again`);
  *  Module exports
  *
  **************************************/
-module.exports = function(opts) {
+module.exports = function (opts) {
     _opts = _.merge(_opts, opts);
     _opts._modelsPath = _opts.url.replace('/_schemas', '/db/');
 
@@ -174,81 +158,85 @@ module.exports = function(opts) {
         _f: _self._f,
         _schema: _self._schema,
         connect: connect,
-        select: function(model) {
-            let _file = '';
-            if (_opts.dateBased === true) {
-                _file = _modelsPath + h.getToday() + '/' + model + '.json';
-                _file = h.modelDateBased(this._f, model);
-            } else {
-                _file = _modelsPath + model + '.json';
-            }
+        select: function select(model) {
+            var _file = '';
+            _file = _modelsPath + model + '.json';
 
             return {
+
                 _f: _file,
+
                 _schema: {
                     content: _self._schema.content[getModel(_file)]
                 },
-                search: function(query, one) {
-                    let collection = checkCache(this._f);
-                    let copyCollection = _.cloneDeep(collection);
+
+                search: function search(query, one) {
+                    var collection = checkCache(this._f);
+                    var copyCollection = _.cloneDeep(collection);
                     h.objectLowercase(copyCollection);
                     if (!query) {
                         return collection;
                     } else {
-                        let minifyQuery = query;
+                        var minifyQuery = query;
                         h.objectLowercase(minifyQuery);
-                        let result = _.filter(copyCollection, minifyQuery);
+                        var result = _.filter(copyCollection, minifyQuery);
                         if (JSON.stringify(result) !== JSON.stringify([])) {
-                            let IDs = _.toArray(_.mapValues(result, '_id'));
-                            let elements = _.filter(collection, function(item) {
-                                return _.includes(IDs, item._id);
-                            });
-                            if (one) {
-                                return elements[0];
-                            } else {
-                                return elements;
-                            }
+                            var _ret = function () {
+                                var IDs = _.toArray(_.mapValues(result, '_id'));
+                                var elements = _.filter(collection, function (item) {
+                                    return _.includes(IDs, item._id);
+                                });
+                                if (one) {
+                                    return {
+                                        v: elements[0]
+                                    };
+                                } else {
+                                    return {
+                                        v: elements
+                                    };
+                                }
+                            }();
+
+                            if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
                         } else {
                             return [];
                         }
                     }
                 },
-                read: function (shuffle) {
-                    if (shuffle) {
-                        return _.shuffle(checkCache(this._f));
-                    } else {
-                        return checkCache(this._f);
-                    }
+
+                read: function read() {
+                    return checkCache(this._f);
                 },
-                readById: function(id, key) {
-                    let collection = checkCache(this._f);
+
+                readById: function readById(id, key) {
+                    var collection = checkCache(this._f);
                     key = key || '_id';
-                    let resi = _.find(collection, {
-                        // [key]: `"${id}"`
-                        [key]: id
-                    });
+                    var resi = _.find(collection, _defineProperty({}, key, id));
                     return resi;
                 },
-                find: function(query) {
+
+                find: function find(query) {
                     return this.search(query);
                 },
-                findOne: function(query) {
+
+                findOne: function findOne(query) {
                     return this.search(query, true);
                 },
-                save: function(data) {
-                    let collection = checkCache(this._f, true);
-                    let schema = _self._schema.content[getModel(this._f)].fields;
+
+                save: function save(data) {
+                    var collection = checkCache(this._f, true);
+                    var schema = _self._schema.content[getModel(this._f)].fields;
                     // if data is Array
-                    if (typeof data === 'object' && data.length) {
+                    if ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object' && data.length) {
                         if (data.length === 1) {
                             if (data[0].length > 0) {
                                 data = data[0];
                             }
                         }
                         _opts.created_at && !data['created_at'] && (data['created_at'] = new Date());
-                        let retCollection = [];
-                        for (let i = data.length - 1; i >= 0; i--) {
-                            let d = data[i];
+                        var retCollection = [];
+                        for (var i = data.length - 1; i >= 0; i--) {
+                            var d = data[i];
                             d._id = uuid.v4().replace(/-/g, '');
                             _self.Models[getModel(this._f)].push(d);
                             collection.push(d);
@@ -256,9 +244,9 @@ module.exports = function(opts) {
                         }
                         h.writeToFile(this._f, collection);
                         return retCollection;
-                    } else if (typeof data === 'object' && _.size(data)) {
+                    } else if ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object' && _.size(data)) {
                         // if data is object
-                        _.forEach(schema, function(item) {
+                        _.forEach(schema, function (item) {
                             if (/|/i.test(item)) {
                                 item = item.split(':')[0];
                             } else {
@@ -278,9 +266,10 @@ module.exports = function(opts) {
                     h.writeToFile(this._f, collection);
                     return data;
                 },
-                update: function(query, data, options) {
-                    let collection = checkCache(this._f, true); // force load
-                    let records = _.find(collection, query);
+
+                update: function update(query, data, options) {
+                    var collection = checkCache(this._f, true); // force load
+                    var records = _.find(collection, query);
                     if (_.isObject(records) || _.isArray(records)) {
                         data.updated_at = new Date();
                         if (options && options.multi) {
@@ -298,9 +287,10 @@ module.exports = function(opts) {
                     h.writeToFile(this._f, collection);
                     return data;
                 },
-                remove: function(query, multi) {
+
+                remove: function remove(query, multi) {
                     if (query) {
-                        let collection = checkCache(this._f, true);
+                        var collection = checkCache(this._f, true);
                         if (typeof multi === 'undefined') {
                             multi = true;
                         }
@@ -317,21 +307,24 @@ module.exports = function(opts) {
                     }
                     return true;
                 },
-                empty: function(cb) {
+
+                empty: function empty(cb) {
                     _self.Models[getModel(this._f)] = [];
                     h.writeToFile(this._f);
                     cb();
                 },
-                first: function(order, query) {
+
+                first: function first(order, query) {
                     !order && (order = 'asc');
-                    let data = _.orderBy(this.search(query, true), 'created_at', order);
+                    var data = _.orderBy(this.search(query, true), 'created_at', order);
                     if (data[0]) {
                         return data[0];
                     }
                     return null;
                 },
-                paginate: function(count, filter, sort) {
-                    let data;
+
+                paginate: function paginate(count, filter, sort) {
+                    var data = void 0;
                     if (filter) {
                         data = this.search(filter);
                     } else {
@@ -340,22 +333,26 @@ module.exports = function(opts) {
                     if (sort) {
                         data = _.orderBy(data, 'created_at', sort);
                     }
-                    let resp = paginator.paginate(count, data);
+                    var resp = paginator.paginate(count, data);
                     return resp;
                 },
-                count: function() {
-                    return (checkCache(this._f)).length;
+
+                count: function count() {
+                    return checkCache(this._f).length;
                 },
-                sync: function(data) {
-                    let In = JSON.stringify(data);
-                    let Has = JSON.stringify(checkCache(this._f));
+
+                sync: function sync(data) {
+                    var In = JSON.stringify(data);
+                    var Has = JSON.stringify(checkCache(this._f));
 
                     if (In != Has) {
-                        let model = getModel(this._f);
+                        var _model = getModel(this._f);
                         try {
                             h.writeToFile(this._f, data);
-                            _self.Models[model] = data;
-                            winston.info('Syncing', model, 'db');
+                            _self.Models[_model] = data;
+
+                            process.env && process.env.NODE_ENV && process.env.NODE_ENV === 'development' && console.log('Syncing', _model, 'db');
+
                             return true;
                         } catch (err) {
                             return false;
@@ -364,13 +361,14 @@ module.exports = function(opts) {
                         return true;
                     }
                 },
-                importJSON: function(data) {
-                    let schema = _self._schema.content[getModel(this._f)].fields;
+
+                importJSON: function importJSON(data) {
+                    var schema = _self._schema.content[getModel(this._f)].fields;
                     // if data if object
-                    if (typeof data === 'object' && _.size(data)) {
+                    if ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object' && _.size(data)) {
                         // check & extend prop if needed
-                        _.forEach(data, function(content, index) {
-                            _.forEach(schema, function(item) {
+                        _.forEach(data, function (content, index) {
+                            _.forEach(schema, function (item) {
                                 if (/|/i.test(item)) {
                                     item = item.split(':')[0];
                                 } else {
@@ -387,9 +385,9 @@ module.exports = function(opts) {
                         return data;
                     }
                 }
-            }
+
+            };
         }
 
-    }
-
-}
+    };
+};

@@ -1,10 +1,13 @@
 {
   "name": "just-json",
-  "version": "0.0.2",
-  "description": "Small json-driven flat-files database system",
-  "main": "index.js",
+  "version": "0.2.15",
+  "description": "Small json-driven flat database",
+  "main": "dist/db2.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon src/db2.js --exec babel-node --presets es2015,stage-2",
+    "build": "babel src -d dist",
+    "serve": "node dist/index.js",
+    "test": "node tests/index.js"
   },
   "repository": {
     "type": "git",
@@ -16,8 +19,7 @@
     "database",
     "jsondb",
     "db",
-    "flat",
-    "file"
+    "flat file"
   ],
   "author": "Ruslan Konev <konev.lincor@gmail.com> (http://justpromotion.ru)",
   "license": "MIT",
@@ -26,7 +28,16 @@
   },
   "homepage": "https://github.com/ruslankonev/just-json#readme",
   "dependencies": {
-    "lodash": "^4.13.1",
-    "node-uuid": "^1.4.7"
+    "bellajs": "^5.4.1",
+    "lodash": "^4.16.0",
+    "mkdirp": "^0.5.1",
+    "promise-wtf": "^1.0.21"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.11.4",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-stage-2": "^6.11.0",
+    "babel-register": "^6.11.6",
+    "nodemon": "^1.10.0"
   }
 }
