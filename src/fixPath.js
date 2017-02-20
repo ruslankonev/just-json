@@ -16,18 +16,18 @@
  *  Dependencies
 ======================================================================
  */
-import path from 'path';
+import path from 'path'
 
 /**
  *  Functions
 ======================================================================
  */
 var fixPath = (p = '') => {
-  return path.normalize(p);
-};
+  return path.normalize(p)
+}
 
 /**
  *  Module exports
 ======================================================================
  */
-export default fixPath;
+export default fixPath
