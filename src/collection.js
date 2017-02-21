@@ -20,6 +20,7 @@ import fs from 'fs'
 import bella from 'bellajs'
 import Finder from './finder'
 import fixPath from './fixPath'
+import Promise from 'promise-wtf'
 
 /**
 *  Initial options
@@ -127,20 +128,22 @@ class Collection {
   }
 
   add(item) {
-    if (!bella.isObject(item)) {
-      throw new Error('Invalid parameter. Object required.')
-    }
-    let file = this.file
-    let data = getColData(file)
-    let c = data.entries || []
-    let id = bella.createId(32)
-    item._id = id
-    item._ts = bella.time()
-    c.unshift(item)
-    data.entries = c
-    setColData(data, file)
-    this.collection = data
-    return id
+    return new Promise((resolve, reject) => {
+      if (!bella.isObject(item)) {
+        reject(new Error('Invalid parameter. Object required.'))
+      }
+      let file = this.file
+      let data = getColData(file)
+      let c = data.entries || []
+      let id = bella.createId(32)
+      item._id = id
+      item._ts = bella.time()
+      c.unshift(item)
+      data.entries = c
+      setColData(data, file)
+      this.collection = data
+      resolve(id)
+    })
   }
 
   store(item) {
@@ -149,80 +152,83 @@ class Collection {
   }
 
   get(id, fields, unsetFields) {
-    let file = this.file
+    return new Promise((resolve, reject) => {
+      let file = this.file
+      // let data = getColData(file)
+      let data = checkCache(this)
+      let c = data.entries || []
 
-    // let data = getColData(file)
-    let data = checkCache(this)
+      if (!id) resolve(c)
 
-    let c = data.entries || []
-
-    if (!id) {
-      return c
-    }
-    if (!bella.isString(id)) {
-      throw new Error('Invalid parameter. String required.')
-    }
-
-    let item
-    for (let i = 0; i < c.length; i++) {
-      let m = c[i]
-      if (m._id === id) {
-        m = removeKeys(m, unsetFields)
-        item = clean(m, fields)
-        break
+      if (!bella.isString(id)) {
+        reject(new Error('Invalid parameter. String required.'))
       }
-    }
-    return item || null
+
+      let item
+      for (let i = 0; i < c.length; i++) {
+        let m = c[i]
+        if (m._id === id) {
+          m = removeKeys(m, unsetFields)
+          item = clean(m, fields)
+          break
+        }
+      }
+
+      resolve(item || null)
+    })
   }
 
   update(id, obj) {
-    if (!bella.isString(id)) {
-      throw new Error('Invalid parameter. String required.')
-    }
-    let file = this.file
-    let data = getColData(file)
-    let c = data.entries || []
-    let item
-    for (let i = 0; i < c.length; i++) {
-      let m = c[i]
-      if (m._id === id) {
-        item = bella.copies(obj, m, true, ['_id', '_ts'])
-        c.splice(i, 1, item)
-        break
+    return new Promise((resolve, reject) => {
+      if (!bella.isString(id)) {
+        reject(new Error('Invalid parameter. String required.'))
       }
-    }
-
-    if (item) {
-      data.entries = c
-      setColData(data, file)
-      this.collection = data
-    }
-    return item
+      let file = this.file
+      let data = getColData(file)
+      let c = data.entries || []
+      let item
+      for (let i = 0; i < c.length; i++) {
+        let m = c[i]
+        if (m._id === id) {
+          item = bella.copies(obj, m, true, ['_id', '_ts'])
+          c.splice(i, 1, item)
+          break
+        }
+      }
+      if (item) {
+        data.entries = c
+        setColData(data, file)
+        this.collection = data
+      }
+      resolve(item)
+    })
   }
 
   remove(id) {
-    if (!bella.isString(id)) {
-      throw new Error('Invalid parameter. String required.')
-    }
-    let file = this.file
-    let data = getColData(file)
-    let c = data.entries || []
-    let item
-    for (let i = c.length - 1; i >= 0; i--) {
-      let m = c[i]
-      if (m._id === id) {
-        item = m
-        c.splice(i, 1)
-        break
+    return new Promise((resolve, reject) => {
+      if (!bella.isString(id)) {
+        reject(new Error('Invalid parameter. String required.'))
       }
-    }
-    if (item) {
-      data.entries = c
-      setColData(data, file)
-      this.collection = data
-      return item
-    }
-    return false
+      let file = this.file
+      let data = getColData(file)
+      let c = data.entries || []
+      let item
+      for (let i = c.length - 1; i >= 0; i--) {
+        let m = c[i]
+        if (m._id === id) {
+          item = m
+          c.splice(i, 1)
+          break
+        }
+      }
+      if (item) {
+        data.entries = c
+        setColData(data, file)
+        this.collection = data
+        resolve(item)
+      }
+      resolve(false)
+    })
   }
 
   count() {
@@ -232,14 +238,16 @@ class Collection {
   }
 
   sync(newData) {
-    let In = JSON.stringify(newData)
-    let Has = JSON.stringify(getColData(this.file))
-    if (In != Has) {
-      setColData(newData, this.file)
-      this.collection = newData
-      return true
-    }
-    return false
+    return new Promise((resolve, reject) => {
+      let In = JSON.stringify(newData)
+      let Has = JSON.stringify(getColData(this.file))
+      if (In != Has) {
+        setColData(newData, this.file)
+        this.collection = newData
+        resolve(true)
+      }
+      resolve(false)
+    })
   }
 
   find() {
