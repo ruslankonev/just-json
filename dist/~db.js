@@ -203,9 +203,12 @@ module.exports = function (opts) {
                         }
                     }
                 },
-
-                read: function read() {
-                    return checkCache(this._f);
+                read: function read(shuffle) {
+                    if (shuffle) {
+                        return _.shuffle(checkCache(this._f));
+                    } else {
+                        return checkCache(this._f);
+                    }
                 },
 
                 readById: function readById(id, key) {

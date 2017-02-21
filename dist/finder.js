@@ -1,21 +1,21 @@
 /**********************************************************************
- *
- *  Just-JSON - small json-driven flat database
- *  inspired by diskdb (https://github.com/arvindr21/diskDB/)
- *  & flat-db (https://github.com/ndaidong/flat-db)
- *
- *  (c) 2016, justpromotion.ru
- *
- *  @author Ruslan Konev
- *  https://github.com/ruslankonev/just-json
- *
- ********************************************************************/
+*
+*  Just-JSON - small json-driven flat database
+*  inspired by diskdb (https://github.com/arvindr21/diskDB/)
+*  & flat-db (https://github.com/ndaidong/flat-db)
+*
+*  (c) 2016, justpromotion.ru
+*
+*  @author Ruslan Konev
+*  https://github.com/ruslankonev/just-json
+*
+********************************************************************/
 'use strict';
 
 /**
- *  Dependencies
+*  Dependencies
 ======================================================================
- */
+*/
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -40,9 +40,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
- *  Finder class
+*  Finder class
 ======================================================================
- */
+*/
 var Finder = function () {
   function Finder() {
     var entries = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
@@ -177,9 +177,9 @@ var Finder = function () {
 }();
 
 /**
- *  Module exports
+*  Module exports
 ======================================================================
- */
+*/
 
 
 exports.default = Finder;
